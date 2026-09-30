@@ -1,240 +1,380 @@
 // server.js
-const express = require('express');
-const mongoose = require('mongoose');
+
+const express = require("express");
+const mongoose = require("mongoose");
 
 const app = express();
 
-// Middleware to parse JSON and form data
+// ==========================================
+// MIDDLEWARE
+// ==========================================
+
+// Read JSON data
 app.use(express.json());
+
+// Read data coming from HTML forms
 app.use(express.urlencoded({ extended: true }));
 
-// ============================================
-// STEP 1: CONNECT TO MONGODB
-// ============================================
 
-// Choose one of these connection strings:
+// ==========================================
+// CONNECT TO LOCAL MONGODB
+// ==========================================
 
-// Option A: Local MongoDB (must have MongoDB installed)
-const DB_URL = 'mongodb+srv://kshitijkumar2727_db_user:muvaNKQwlw3LRPnj@lab2mongo.blt3jj1.mongodb.net/';
+const DB_URL = "mongodb://127.0.0.1:27017/lab2";
 
-// Option B: MongoDB Atlas (replace with your connection string)
-// const DB_URL = 'mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/userdb?retryWrites=true&w=majority';
+mongoose
+  .connect(DB_URL)
+  .then(() => {
+    console.log("Connected to MongoDB successfully");
+  })
+  .catch((error) => {
+    console.log("MongoDB connection error:", error.message);
+  });
 
-mongoose.connect(DB_URL)
-  .then(() => console.log('Connected to MongoDB successfully'))
-  .catch(err => console.error('MongoDB connection error:', err));
 
-// ============================================
-// STEP 2: DEFINE THE USER SCHEMA
-// ============================================
+// ==========================================
+// USER SCHEMA
+// ==========================================
 
-// Schema defines the structure of documents in the collection
 const userSchema = new mongoose.Schema({
   username: {
-    type: String,        // Field must be text
-    required: true,      // Field is mandatory
-    unique: true         // No two users can have same username
+    type: String,
+    required: true,
+    unique: true
   },
+
   email: {
     type: String,
     required: true,
     unique: true
   },
+
   password: {
     type: String,
     required: true
   },
+
   createdAt: {
     type: Date,
-    default: Date.now    // Automatically set to current date/time
+    default: Date.now
   }
 });
 
-// ============================================
-// STEP 3: CREATE THE MODEL
-// ============================================
 
-// Model is the interface to interact with the database
-const User = mongoose.model('User', userSchema);
+// ==========================================
+// USER MODEL
+// ==========================================
 
-// ============================================
-// STEP 4: CREATE ROUTES
-// ============================================
+const User = mongoose.model("User", userSchema);
 
-// HOME ROUTE
-app.get('/', (req, res) => {
+
+// ==========================================
+// HOME PAGE
+// ==========================================
+
+app.get("/", (req, res) => {
   res.send(`
     <!DOCTYPE html>
+
     <html>
+
     <head>
-      <title>User Management System</title>
+      <title>MongoDB User Management</title>
+
       <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-        .container { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; }
-        h2 { color: #333; }
-        input { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; }
-        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px; }
-        button:hover { background: #0056b3; }
-        .success { color: green; }
-        .error { color: red; }
+
+        body {
+          font-family: Arial;
+          max-width: 700px;
+          margin: 40px auto;
+          padding: 20px;
+        }
+
+        .container {
+          background: #f2f2f2;
+          padding: 20px;
+          margin-bottom: 20px;
+          border-radius: 10px;
+        }
+
+        input {
+          width: 100%;
+          padding: 10px;
+          margin: 6px 0;
+          box-sizing: border-box;
+        }
+
+        button {
+          padding: 10px 20px;
+          margin-top: 10px;
+          cursor: pointer;
+        }
+
       </style>
+
     </head>
+
     <body>
+
       <h1>User Management System</h1>
-      
+
+      <!-- SIGNUP -->
+
       <div class="container">
-        <h2>Register New User</h2>
+
+        <h2>Register User</h2>
+
         <form action="/signup" method="POST">
-          <input type="text" name="username" placeholder="Username" required>
-          <input type="email" name="email" placeholder="Email" required>
-          <input type="password" name="password" placeholder="Password" required>
-          <button type="submit">Sign Up</button>
+
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            required
+          >
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            required
+          >
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+          >
+
+          <button type="submit">
+            Sign Up
+          </button>
+
         </form>
+
       </div>
 
+
+      <!-- LOGIN -->
+
       <div class="container">
+
         <h2>Login</h2>
+
         <form action="/login" method="POST">
-          <input type="text" name="username" placeholder="Username" required>
-          <input type="password" name="password" placeholder="Password" required>
-          <button type="submit">Login</button>
+
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            required
+          >
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+          >
+
+          <button type="submit">
+            Login
+          </button>
+
         </form>
+
       </div>
 
+
+      <!-- VIEW USERS -->
+
       <div class="container">
-        <h2>View All Users</h2>
-        <form action="/users" method="GET">
-          <button type="submit">Show All Registered Users</button>
-        </form>
+
+        <h2>Registered Users</h2>
+
+        <a href="/users">
+          <button>Show All Users</button>
+        </a>
+
       </div>
+
     </body>
+
     </html>
   `);
 });
 
-// SIGNUP ROUTE - Register a new user
-app.post('/signup', async (req, res) => {
+
+// ==========================================
+// SIGNUP
+// ==========================================
+
+app.post("/signup", async (req, res) => {
+
   try {
-    // Get data from the form submission
+
     const { username, email, password } = req.body;
 
-    // Create a new user document
     const newUser = new User({
-      username: username,
-      email: email,
-      password: password
+      username,
+      email,
+      password
     });
 
-    // Save the document to MongoDB
     await newUser.save();
 
     res.send(`
-      <h2 class="success">User registered successfully!</h2>
+      <h1>User Registered Successfully!</h1>
+
       <p>Username: ${username}</p>
+
       <p>Email: ${email}</p>
-      <a href="/">Go back to home</a>
+
+      <br>
+
+      <a href="/">Go Back</a>
     `);
 
   } catch (error) {
-    // Handle errors (like duplicate username or email)
+
     if (error.code === 11000) {
+
       res.send(`
-        <h2 class="error">Error: Username or email already exists</h2>
-        <a href="/">Go back and try again</a>
+        <h1>User already exists!</h1>
+        <a href="/">Go Back</a>
       `);
+
     } else {
+
       res.send(`
-        <h2 class="error">Error: ${error.message}</h2>
-        <a href="/">Go back and try again</a>
+        <h1>Error</h1>
+        <p>${error.message}</p>
+        <a href="/">Go Back</a>
       `);
+
     }
+
   }
+
 });
 
-// LOGIN ROUTE - Check user credentials
-app.post('/login', async (req, res) => {
+
+// ==========================================
+// LOGIN
+// ==========================================
+
+app.post("/login", async (req, res) => {
+
   try {
+
     const { username, password } = req.body;
 
-    // Find user in database
-    const user = await User.findOne({ username: username });
+    const user = await User.findOne({ username });
 
-    // Check if user exists
     if (!user) {
+
       return res.send(`
-        <h2 class="error">User not found</h2>
-        <a href="/">Go back and try again</a>
+        <h1>User Not Found</h1>
+        <a href="/">Go Back</a>
       `);
+
     }
 
-    // Check if password matches
     if (user.password !== password) {
+
       return res.send(`
-        <h2 class="error">Incorrect password</h2>
-        <a href="/">Go back and try again</a>
+        <h1>Incorrect Password</h1>
+        <a href="/">Go Back</a>
       `);
+
     }
 
-    // Login successful
     res.send(`
-      <h2 class="success">Login successful!</h2>
-      <p>Welcome back, ${user.username}!</p>
+      <h1>Login Successful!</h1>
+
+      <p>Welcome ${user.username}</p>
+
       <p>Email: ${user.email}</p>
-      <p>Account created: ${user.createdAt.toDateString()}</p>
-      <a href="/">Go back to home</a>
+
+      <br>
+
+      <a href="/">Go Back</a>
     `);
 
   } catch (error) {
+
     res.send(`
-      <h2 class="error">Error: ${error.message}</h2>
-      <a href="/">Go back and try again</a>
+      <h1>Error</h1>
+      <p>${error.message}</p>
+      <a href="/">Go Back</a>
     `);
+
   }
+
 });
 
-// GET ALL USERS ROUTE - Display all registered users
-app.get('/users', async (req, res) => {
+
+// ==========================================
+// SHOW ALL USERS
+// ==========================================
+
+app.get("/users", async (req, res) => {
+
   try {
-    // Find all users in the database
-    const allUsers = await User.find();
 
-    // Check if there are any users
-    if (allUsers.length === 0) {
-      return res.send(`
-        <h2>No users registered yet</h2>
-        <a href="/">Go back to home</a>
-      `);
-    }
+    const users = await User.find();
 
-    // Create HTML to display users
-    let userList = '<h2>Registered Users</h2><ul>';
-    
-    allUsers.forEach(user => {
-      userList += `
+    let output = `
+      <h1>Registered Users</h1>
+      <ul>
+    `;
+
+    users.forEach((user) => {
+
+      output += `
         <li>
-          <strong>Username:</strong> ${user.username} | 
-          <strong>Email:</strong> ${user.email} | 
-          <strong>Joined:</strong> ${user.createdAt.toDateString()}
+          <b>Username:</b> ${user.username}
+          |
+          <b>Email:</b> ${user.email}
         </li>
       `;
+
     });
-    
-    userList += '</ul><a href="/">Go back to home</a>';
-    res.send(userList);
+
+    output += `
+      </ul>
+
+      <br>
+
+      <a href="/">Go Back</a>
+    `;
+
+    res.send(output);
 
   } catch (error) {
+
     res.send(`
-      <h2 class="error">Error: ${error.message}</h2>
-      <a href="/">Go back and try again</a>
+      <h1>Error</h1>
+      <p>${error.message}</p>
+      <a href="/">Go Back</a>
     `);
+
   }
+
 });
 
-// ============================================
-// START THE SERVER
-// ============================================
+
+// ==========================================
+// START SERVER
+// ==========================================
 
 const PORT = 3000;
+
 app.listen(PORT, () => {
+
   console.log(`Server running on http://localhost:${PORT}`);
+
 });
+
+// node server.js
