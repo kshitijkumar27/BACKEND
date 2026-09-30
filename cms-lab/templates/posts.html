@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Simple CMS</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <div>
+            <h1>Simple CMS</h1>
+            <p class="subtitle">Backend Development Lab</p>
+        </div>
+
+        <a href="{{ url_for('new_post') }}" class="button">
+            + Create Post
+        </a>
+    </header>
+
+
+    <h2>Latest Posts</h2>
+
+
+    {% if posts %}
+
+        <div class="post-list">
+
+            {% for post in posts %}
+
+                <div class="post-card">
+
+                    <h3>
+                        <a href="{{ url_for('view_post', post_id=post['_id']) }}">
+                            {{ post['title'] }}
+                        </a>
+                    </h3>
+
+                    <div class="post-info">
+
+                        <span>
+                            By {{ post['author'] }}
+                        </span>
+
+                        <span>
+                            {{ post['createdAt'].strftime('%d %B %Y, %I:%M %p') }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty">
+            <h3>No posts yet</h3>
+            <p>Create your first blog post.</p>
+        </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>
